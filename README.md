@@ -114,3 +114,4 @@ npm run start
 
 - [ ] Move to Typescript
 - [ ] Add IA to summarize updates
+- [ ] Add templates example for scraping updates
