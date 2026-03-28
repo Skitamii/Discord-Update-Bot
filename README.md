@@ -38,12 +38,12 @@ npm install
 
 Go to [Discord applications](https://discord.com/developers/applications) and create a New Application
 Then add your Application ID from your bot to you .env file
-![Image of Discord Application ID location](https://cdn.discordapp.com/attachments/548603677808525322/1470483905059749981/opera_ahIr99ds6O.png?ex=698b765b&is=698a24db&hm=ba8a067432526eaeea126ea67b78f6887ee3207dbeca2caf66cc9d122bde9842&)
+![Image of Discord Application ID location](https://skitami.fr/static/img/discordApplicationID.png)
 
 ### 3.2 Get your Bot Token
 
 On the "Bot" section, you need your Bot Token
-![Image of Discord Bot Token location](https://cdn.discordapp.com/attachments/548603677808525322/1470483894338850817/opera_0FuxH4EAVD.png?ex=698b7658&is=698a24d8&hm=109a04eb44673d3a494772ca45059d601422ef2773bf19d955c094ef27cac3b6&)
+![Image of Discord Bot Token location](https://skitami.fr/static/img/discordBotToken.png)
 
 ### 3.3 Get your User ID
 
@@ -53,6 +53,7 @@ You can check this [Where can I find my User/Server/Message ID?](https://support
 ### 4. Init and start project
 
 ```bash
+npm run build
 npm run setup
 npm run deploy-commands # deploy commands every time you add a new one in ./src/commands folder
 npm run start
@@ -112,5 +113,5 @@ npm run start
 
 ## ✅ To do list
 
-- [ ] Move to Typescript
+- [x] Move to Typescript
 - [ ] Add IA to summarize updates
