@@ -2,6 +2,7 @@ import { SlashCommandBuilder, MessageFlags, ChatInputCommandInteraction } from '
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import type { jsonFeeds } from '../utils/types.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,7 +14,7 @@ export const data = new SlashCommandBuilder()
 
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
+    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8')) as jsonFeeds;
 
     const feedsList = Object.entries(feeds)
         .map(([name, _data]) => `- ${name}`)

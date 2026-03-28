@@ -6,7 +6,6 @@ import type { jsonSubscription } from '../utils/types.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const feedsPath = path.join(__dirname, './../data/feeds.json');
 const subscriptionsPath = path.join(__dirname, './../data/subscriptions.json');
 
 export const data = new SlashCommandBuilder()
@@ -16,7 +15,6 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
     const subscriptions: Record<string, jsonSubscription> = JSON.parse(fs.readFileSync(subscriptionsPath, 'utf-8'));
 
     const isPM = !interaction.guildId;

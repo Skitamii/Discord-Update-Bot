@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { checkFeed } from '../utils/rssParser.js';
 import type { Client } from 'discord.js';
-import { config, type jsonFeed } from './types.js';
+import { config, type jsonFeed, type jsonFeeds } from './types.js';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -18,7 +18,7 @@ export function startFeedChecker(client: Client) {
 }
 
 async function checkAllFeeds(client: Client) {
-    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
+    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8')) as jsonFeeds;
 
     for (const [feedName, feed] of Object.entries(feeds)) {
         try {

@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { checkRSSFeed } from '../utils/rssParser.js';
 import { validateThumbnailURL, verifyAndSetHEXColor } from '../utils/verificator.js';
-import { config } from '../utils/types.js';
+import { config, type jsonFeeds, type jsonSubscriptions } from '../utils/types.js';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -64,7 +64,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
     }
 
-    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
+    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8')) as jsonFeeds;
 
     if (feeds[feedName]) {
         return await interaction.editReply(`❌ Feed with name \`${feedName}\` already exist.`);
@@ -72,14 +72,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     feeds[feedName] = {
         url,
-        lastState: null,
-        lastUpdatedAt: null, // to be used while doing scrapers
+        lastState: "",
+        lastUpdatedAt: "", // to be used while doing scrapers
         disabled: false,
-        thumbnail: thumbnail || null, // to be checked add.js and edit.js
-        embedColor: embedColor || null,
+        thumbnail: thumbnail, // to be checked add.js and edit.js
+        embedColor: embedColor,
     };
 
-    const subscriptions = JSON.parse(fs.readFileSync(subscriptionsPath, 'utf-8'));
+    const subscriptions = JSON.parse(fs.readFileSync(subscriptionsPath, 'utf-8')) as jsonSubscriptions;
 
     subscriptions[feedName] = {
         user: [],

@@ -31,9 +31,13 @@ export interface jsonSubscription {
     channel: string[];
 }
 
+export interface jsonSubscriptions {
+    [feedName: string]: jsonSubscription;
+}
+
 export const config = {
-    BOT_TOKEN: process.env.BOT_TOKEN as string,
-    APPLICATION_ID: process.env.APPLICATION_ID as string,
-    ADMIN_ID: process.env.ADMIN_ID as UserResolvable,
-    CHECK_INTERVAL: Number(process.env.CHECK_INTERVAL) || 5,
+    BOT_TOKEN: process.env['BOT_TOKEN'] as string,
+    APPLICATION_ID: process.env['APPLICATION_ID'] as string,
+    ADMIN_ID: process.env['ADMIN_ID'] as UserResolvable,
+    CHECK_INTERVAL: Number(process.env['CHECK_INTERVAL']) || 5,
 };

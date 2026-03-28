@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { checkRSSFeed } from '../utils/rssParser.js';
 import { validateThumbnailURL, verifyAndSetHEXColor } from '../utils/verificator.js';
-import { config } from '../utils/types.js';
+import { config, type jsonFeeds, type jsonSubscriptions } from '../utils/types.js';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -49,7 +49,7 @@ export const data = new SlashCommandBuilder()
 
 export async function autocomplete(interaction: AutocompleteInteraction) {
     const focusedValue = interaction.options.getFocused();
-    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
+    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8')) as jsonFeeds;
 
     const choices = Object.keys(feeds)
         .filter(name => name.toLowerCase().includes(focusedValue.toLowerCase()))
@@ -72,7 +72,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const thumbnail = (interaction.options.getString('thumbnail') || '').toLowerCase();
     let embedColor = (interaction.options.getString('embedcolor') || '').toUpperCase();
 
-    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
+    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8')) as jsonFeeds;
 
     if (!feeds[feedName]) {
         return await interaction.editReply(`❌ No feed with name '${feedName}'.`);
@@ -83,7 +83,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     }
 
     const edits = [];
-    const subscriptions = JSON.parse(fs.readFileSync(subscriptionsPath, 'utf-8'));
+    const subscriptions = JSON.parse(fs.readFileSync(subscriptionsPath, 'utf-8')) as jsonSubscriptions;
 
     // apply edits
     if (newFeedName) {
@@ -91,8 +91,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         feeds[newFeedName] = feeds[feedName];
         delete feeds[feedName];
 
-
-        subscriptions[newFeedName] = subscriptions[feedName];
+        subscriptions[newFeedName] = subscriptions[feedName]!;
         delete subscriptions[feedName];
 
         edits.push(`Name: ${feedName} → ${newFeedName}`);
@@ -100,10 +99,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     const currentFeedName = newFeedName || feedName;
     if (isDisabled) {
-        feeds[currentFeedName].disabled = isDisabled;
+        feeds[currentFeedName]!.disabled = isDisabled;
         edits.push(`State updated to ${isDisabled}`);
     } else if (isDisabled == false) {
-        feeds[currentFeedName].disabled = isDisabled;
+        feeds[currentFeedName]!.disabled = isDisabled;
         edits.push(`State updated to ${isDisabled}`);
     }
     if (url) {
@@ -112,7 +111,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         } catch (error) {
             return await interaction.editReply(`❌ Invalid feed URL.`);
         }
-        feeds[currentFeedName].url = url;
+        feeds[currentFeedName]!.url = url;
         edits.push(`URL: ${url}`);
     }
     if (thumbnail) {
@@ -121,12 +120,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         if (!isThumbnailValid) {
             return await interaction.editReply(`❌ Invalid thumbnail URL. Must be HTTPS and point to a valid image (PNG, JPG, GIF, WebP).`);
         }
-        feeds[currentFeedName].thumbnail = thumbnail;
+        feeds[currentFeedName]!.thumbnail = thumbnail;
         edits.push('Thumbnail updated');
     }
     if (embedColor) {
-        feeds[currentFeedName].embedColor = verifyAndSetHEXColor(embedColor);
-        edits.push(`Embed color: ${embedColor}`);
+        feeds[currentFeedName]!.embedColor = verifyAndSetHEXColor(embedColor);
+        edits.push(`Embed color: ${feeds[currentFeedName]!.embedColor}`);
     }
 
     if (edits.length === 0) {

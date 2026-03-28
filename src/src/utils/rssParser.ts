@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import rssParser, { type Item } from "rss-parser"
 import { createUpdateEmbed } from './embedBuilder.js';
-import type { jsonFeed, jsonFeeds, jsonSubscription } from './types.js';
+import type { jsonFeed, jsonFeeds, jsonSubscription, jsonSubscriptions } from './types.js';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -40,15 +40,15 @@ export async function checkFeed(clientOrInteraction: Client | ChatInputCommandIn
             await notifySubscribers(clientOrInteraction, feed, parsedLastItem, feedName, feeds);
         }
     } catch (error) {
-        const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
-        feeds[feedName].disabled = true;
+        const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8')) as jsonFeeds;
+        feeds[feedName]!.disabled = true;
         fs.writeFileSync(feedsPath, JSON.stringify(feeds, null, 2));
         throw new Error(error instanceof Error ? error.message : String(error));
     }
 }
 
 async function notifySubscribers(clientOrInteraction: Client | ChatInputCommandInteraction, feed: jsonFeed, item: Item, feedName: string, feeds: jsonFeeds) {
-    const subscriptions = JSON.parse(fs.readFileSync(subscriptionsPath, 'utf-8'));
+    const subscriptions = JSON.parse(fs.readFileSync(subscriptionsPath, 'utf-8')) as jsonSubscriptions;
     const embed = createUpdateEmbed(feed, feedName, item);
     const subscription = subscriptions[feedName] as jsonSubscription;
 

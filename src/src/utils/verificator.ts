@@ -1,20 +1,22 @@
-export function verifyAndSetHEXColor(color: string) {
+import type { ColorResolvable } from 'discord.js';
+
+export function verifyAndSetHEXColor(color: string): ColorResolvable {
     if (color && /^[0-9A-F]{6}$/i.test(color)) {
         return `#${color}`;
     } else if (color && /^#[0-9A-F]{6}$/i.test(color)) {
-        return `${color}`;
+        return `${color}` as ColorResolvable;
     } else {
         return randomHexColor();
     }
 }
 
-function randomHexColor() {
+function randomHexColor(): ColorResolvable {
     const letters = '0123456789ABCDEF';
-    let color = '#';
+    let color = '';
     for (let i = 0; i < 6; i++) {
         color += letters[Math.floor(Math.random() * 16)];
     }
-    return color;
+    return `#${color}`;
 }
 
 export async function validateThumbnailURL(url: string) {

@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { checkFeed } from '../utils/rssParser.js';
 import { fileURLToPath } from 'url';
+import type { jsonFeeds, jsonSubscriptions } from '../utils/types.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,23 +26,23 @@ export const data = new SlashCommandBuilder()
 
 export async function autocomplete(interaction: AutocompleteInteraction) {
     const focusedValue = interaction.options.getFocused();
-    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
-    const subscriptions = JSON.parse(fs.readFileSync(subscriptionsPath, 'utf-8'));
+    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8')) as jsonFeeds;
+    const subscriptions = JSON.parse(fs.readFileSync(subscriptionsPath, 'utf-8')) as jsonSubscriptions;
 
     const choices = Object.keys(feeds)
         .filter(name => name.toLowerCase().includes(focusedValue.toLowerCase()))
-        .filter(feed => !feeds[feed].disabled)
+        .filter(feed => !feeds[feed]!.disabled)
         .filter(feedName => {
             const subscription = subscriptions[feedName];
 
             const isPM = !interaction.guildId;
             if (isPM) {
                 const userID = interaction.user.id
-                const isUserSubscribed = subscription["user"].includes(userID);
+                const isUserSubscribed = subscription!["user"].includes(userID);
                 return isUserSubscribed
             } else {
                 const channelID = interaction.channelId;
-                const isChannelSubscribed = subscription["channel"].includes(channelID);
+                const isChannelSubscribed = subscription!["channel"].includes(channelID);
                 return isChannelSubscribed;
             }
         })
@@ -61,7 +62,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     }
 
     const feedName = interaction.options.getString('feedname', true);
-    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
+    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8')) as jsonFeeds;
     const feed = feeds[feedName];
 
     if (!feed) return await interaction.editReply('❌ Feed not found.');

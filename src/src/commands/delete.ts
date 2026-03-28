@@ -1,7 +1,7 @@
 import { SlashCommandBuilder, MessageFlags, PermissionFlagsBits, AutocompleteInteraction, ChatInputCommandInteraction } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
-import { config } from '../utils/types.js';
+import { config, type jsonFeeds, type jsonSubscriptions } from '../utils/types.js';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -22,7 +22,7 @@ export const data = new SlashCommandBuilder()
 
 export async function autocomplete(interaction: AutocompleteInteraction) {
     const focusedValue = interaction.options.getFocused();
-    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
+    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8')) as jsonFeeds;
 
     const choices = Object.keys(feeds)
         .filter(name => name.toLowerCase().includes(focusedValue.toLowerCase()))
@@ -39,8 +39,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const feedName = interaction.options.getString('feedname', true);
-    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
-    const subscriptions = JSON.parse(fs.readFileSync(subscriptionsPath, 'utf-8'));
+    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8')) as jsonFeeds;
+    const subscriptions = JSON.parse(fs.readFileSync(subscriptionsPath, 'utf-8')) as jsonSubscriptions;
 
     if (!feeds[feedName]) {
         return await interaction.editReply(`❌ No feed with name '${feedName}'.`);
