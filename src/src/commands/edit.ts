@@ -1,13 +1,15 @@
-import 'dotenv/config';
-import { SlashCommandBuilder, MessageFlags, PermissionFlagsBits } from 'discord.js';
+import { SlashCommandBuilder, MessageFlags, PermissionFlagsBits, ChatInputCommandInteraction, AutocompleteInteraction } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
 import { checkRSSFeed } from '../utils/rssParser.js';
 import { validateThumbnailURL, verifyAndSetHEXColor } from '../utils/verificator.js';
+import { config, type jsonFeeds, type jsonSubscriptions } from '../utils/types.js';
+import { fileURLToPath } from 'url';
 
-const foldersPath = './src';
-const feedsPath = path.join(foldersPath, './../data/feeds.json');
-const subscriptionsPath = path.join(foldersPath, './../data/subscriptions.json');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const feedsPath = path.join(__dirname, './../data/feeds.json');
+const subscriptionsPath = path.join(__dirname, './../data/subscriptions.json');
 
 export const data = new SlashCommandBuilder()
     .setName('edit')
@@ -45,9 +47,9 @@ export const data = new SlashCommandBuilder()
             .setRequired(false)
     );
 
-export async function autocomplete(interaction) {
+export async function autocomplete(interaction: AutocompleteInteraction) {
     const focusedValue = interaction.options.getFocused();
-    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
+    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8')) as jsonFeeds;
 
     const choices = Object.keys(feeds)
         .filter(name => name.toLowerCase().includes(focusedValue.toLowerCase()))
@@ -58,19 +60,19 @@ export async function autocomplete(interaction) {
     );
 }
 
-export async function execute(interaction) {
-    if (interaction.user.id !== process.env.ADMIN_ID) return;
+export async function execute(interaction: ChatInputCommandInteraction) {
+    if (interaction.user.id !== config.ADMIN_ID) return;
 
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-    const feedName = interaction.options.getString('feedname');
+    const feedName = interaction.options.getString('feedname', true);
     const newFeedName = interaction.options.getString('newfeedname');
-    const isDisabled = interaction.options.getString('disabled');
+    const isDisabled = interaction.options.getBoolean('disabled');
     const url = (interaction.options.getString('url') || '').toLowerCase();
     const thumbnail = (interaction.options.getString('thumbnail') || '').toLowerCase();
     let embedColor = (interaction.options.getString('embedcolor') || '').toUpperCase();
 
-    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
+    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8')) as jsonFeeds;
 
     if (!feeds[feedName]) {
         return await interaction.editReply(`❌ No feed with name '${feedName}'.`);
@@ -81,7 +83,7 @@ export async function execute(interaction) {
     }
 
     const edits = [];
-    const subscriptions = JSON.parse(fs.readFileSync(subscriptionsPath, 'utf-8'));
+    const subscriptions = JSON.parse(fs.readFileSync(subscriptionsPath, 'utf-8')) as jsonSubscriptions;
 
     // apply edits
     if (newFeedName) {
@@ -89,8 +91,7 @@ export async function execute(interaction) {
         feeds[newFeedName] = feeds[feedName];
         delete feeds[feedName];
 
-
-        subscriptions[newFeedName] = subscriptions[feedName];
+        subscriptions[newFeedName] = subscriptions[feedName]!;
         delete subscriptions[feedName];
 
         edits.push(`Name: ${feedName} → ${newFeedName}`);
@@ -98,10 +99,10 @@ export async function execute(interaction) {
 
     const currentFeedName = newFeedName || feedName;
     if (isDisabled) {
-        feeds[currentFeedName].disabled = isDisabled;
+        feeds[currentFeedName]!.disabled = isDisabled;
         edits.push(`State updated to ${isDisabled}`);
     } else if (isDisabled == false) {
-        feeds[currentFeedName].disabled = isDisabled;
+        feeds[currentFeedName]!.disabled = isDisabled;
         edits.push(`State updated to ${isDisabled}`);
     }
     if (url) {
@@ -110,7 +111,7 @@ export async function execute(interaction) {
         } catch (error) {
             return await interaction.editReply(`❌ Invalid feed URL.`);
         }
-        feeds[currentFeedName].url = url;
+        feeds[currentFeedName]!.url = url;
         edits.push(`URL: ${url}`);
     }
     if (thumbnail) {
@@ -119,12 +120,12 @@ export async function execute(interaction) {
         if (!isThumbnailValid) {
             return await interaction.editReply(`❌ Invalid thumbnail URL. Must be HTTPS and point to a valid image (PNG, JPG, GIF, WebP).`);
         }
-        feeds[currentFeedName].thumbnail = thumbnail;
+        feeds[currentFeedName]!.thumbnail = thumbnail;
         edits.push('Thumbnail updated');
     }
     if (embedColor) {
-        feeds[currentFeedName].embedColor = verifyAndSetHEXColor(embedColor);
-        edits.push(`Embed color: ${embedColor}`);
+        feeds[currentFeedName]!.embedColor = verifyAndSetHEXColor(embedColor);
+        edits.push(`Embed color: ${feeds[currentFeedName]!.embedColor}`);
     }
 
     if (edits.length === 0) {

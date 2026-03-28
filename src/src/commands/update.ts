@@ -1,11 +1,14 @@
-import { SlashCommandBuilder, MessageFlags } from 'discord.js';
+import { SlashCommandBuilder, MessageFlags, ChatInputCommandInteraction, AutocompleteInteraction } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
 import { checkFeed } from '../utils/rssParser.js';
+import { fileURLToPath } from 'url';
+import type { jsonFeeds, jsonSubscriptions } from '../utils/types.js';
 
-const foldersPath = './src';
-const feedsPath = path.join(foldersPath, './../data/feeds.json');
-const subscriptionsPath = path.join(foldersPath, './../data/subscriptions.json');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const feedsPath = path.join(__dirname, './../data/feeds.json');
+const subscriptionsPath = path.join(__dirname, './../data/subscriptions.json');
 
 export const data = new SlashCommandBuilder()
     .setName('update')
@@ -21,25 +24,25 @@ export const data = new SlashCommandBuilder()
             .setDescription('true = only visible by you')
     );
 
-export async function autocomplete(interaction) {
+export async function autocomplete(interaction: AutocompleteInteraction) {
     const focusedValue = interaction.options.getFocused();
-    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
-    const subscriptions = JSON.parse(fs.readFileSync(subscriptionsPath, 'utf-8'));
+    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8')) as jsonFeeds;
+    const subscriptions = JSON.parse(fs.readFileSync(subscriptionsPath, 'utf-8')) as jsonSubscriptions;
 
     const choices = Object.keys(feeds)
         .filter(name => name.toLowerCase().includes(focusedValue.toLowerCase()))
-        .filter(feed => !feeds[feed].disabled)
+        .filter(feed => !feeds[feed]!.disabled)
         .filter(feedName => {
             const subscription = subscriptions[feedName];
 
             const isPM = !interaction.guildId;
             if (isPM) {
                 const userID = interaction.user.id
-                const isUserSubscribed = subscription["user"].includes(userID);
+                const isUserSubscribed = subscription!["user"].includes(userID);
                 return isUserSubscribed
             } else {
                 const channelID = interaction.channelId;
-                const isChannelSubscribed = subscription["channel"].includes(channelID);
+                const isChannelSubscribed = subscription!["channel"].includes(channelID);
                 return isChannelSubscribed;
             }
         })
@@ -50,7 +53,7 @@ export async function autocomplete(interaction) {
     );
 }
 
-export async function execute(interaction) {
+export async function execute(interaction: ChatInputCommandInteraction) {
     const ephemeral = interaction.options.getBoolean('ephemeral');
     if (ephemeral == false) { // false because null is false too
         await interaction.deferReply();
@@ -58,9 +61,11 @@ export async function execute(interaction) {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     }
 
-    const feedName = interaction.options.getString('feedname');
-    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
+    const feedName = interaction.options.getString('feedname', true);
+    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8')) as jsonFeeds;
     const feed = feeds[feedName];
 
-    checkFeed(interaction, feed, feedName)
+    if (!feed) return await interaction.editReply('❌ Feed not found.');
+
+    await checkFeed(interaction, feed, feedName)
 }

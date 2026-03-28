@@ -1,24 +1,18 @@
-import 'dotenv/config';
-import { SlashCommandBuilder, MessageFlags, EmbedBuilder } from 'discord.js';
-import fs from 'fs';
-import path from 'path';
-import rssParser from "rss-parser"
+import { EmbedBuilder } from 'discord.js';
+import rssParser from "rss-parser";
+import type { jsonFeed } from './types.js';
 
-const foldersPath = './src';
-const feedsPath = path.join(foldersPath, './../data/feeds.json');
-const subscriptionsPath = path.join(foldersPath, './../data/subscriptions.json');
-
-export function createUpdateEmbed(feed, feedName, item) {
+export function createUpdateEmbed(feed: jsonFeed, feedName: string, item: rssParser.Item) {
     const embed = new EmbedBuilder()
         .setColor(feed.embedColor)
         .setAuthor({ name: feedName })
-        .setTitle(item.title)
-        .setURL(item.link)
-        .setDescription(htmlToDiscord(item.contentSnippet)) // use "content" but replace html tags to Discord markdown thing
+        .setTitle(item.title || null)
+        .setURL(item.link || null)
+        .setDescription(htmlToDiscord(item.contentSnippet || "")) // use "content" but replace html tags to Discord markdown thing
         .setFooter({
             text: `Update from ${feedName}`
         })
-        .setTimestamp(new Date(item.pubDate || item.isoDate || item.date));
+        .setTimestamp(new Date(item.pubDate || item.isoDate || ''));
     if (item.enclosure != undefined) {
         if (item.enclosure.url != undefined) {
             embed.setImage(item.enclosure.url);
@@ -30,11 +24,11 @@ export function createUpdateEmbed(feed, feedName, item) {
     return embed;
 }
 
-function htmlToDiscord(content) {
+function htmlToDiscord(content: string) {
     if (!content) return '';
     const charLimit = 500;
 
-    content.replace(/[\r\n\t]+/g, '\n');
+    content = content.replace(/[\r\n\t]+/g, '\n');
 
     // 5. Smart truncation to ~500 characters
     if (content.length > charLimit) {

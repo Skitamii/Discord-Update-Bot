@@ -1,10 +1,13 @@
-import { SlashCommandBuilder, MessageFlags } from 'discord.js';
+import { SlashCommandBuilder, MessageFlags, ChatInputCommandInteraction, AutocompleteInteraction } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+import type { jsonFeeds, jsonSubscriptions } from '../utils/types.js';
 
-const foldersPath = './src';
-const feedsPath = path.join(foldersPath, './../data/feeds.json');
-const subscriptionsPath = path.join(foldersPath, './../data/subscriptions.json');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const feedsPath = path.join(__dirname, './../data/feeds.json');
+const subscriptionsPath = path.join(__dirname, './../data/subscriptions.json');
 
 export const data = new SlashCommandBuilder()
     .setName('unsubscribe')
@@ -16,48 +19,46 @@ export const data = new SlashCommandBuilder()
             .setAutocomplete(true)
     );
 
-export async function autocomplete(interaction) {
+export async function autocomplete(interaction: AutocompleteInteraction) {
     const focusedValue = interaction.options.getFocused();
-        const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
-        const subscriptions = JSON.parse(fs.readFileSync(subscriptionsPath, 'utf-8'));
-    
-        const choices = Object.keys(feeds)
-            .filter(name => name.toLowerCase().includes(focusedValue.toLowerCase()))
-            .filter(feed => !feeds[feed].disabled)
-            .filter(feedName => {
-                const subscription = subscriptions[feedName];
-    
-                const isPM = !interaction.guildId;
-                if (isPM) {
-                    const userID = interaction.user.id
-                    const isUserSubscribed = subscription["user"].includes(userID);
-                    return isUserSubscribed
-                } else {
-                    const channelID = interaction.channelId;
-                    const isChannelSubscribed = subscription["channel"].includes(channelID);
-                    return isChannelSubscribed;
-                }
-            })
-            .slice(0, 25);
-    
-        await interaction.respond(
-            choices.map(name => ({ name, value: name }))
-        );
+    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8')) as jsonFeeds;
+    const subscriptions = JSON.parse(fs.readFileSync(subscriptionsPath, 'utf-8')) as jsonSubscriptions;
+
+    const choices = Object.keys(feeds)
+        .filter(name => name.toLowerCase().includes(focusedValue.toLowerCase()))
+        .filter(feed => !feeds[feed]!.disabled)
+        .filter(feedName => {
+            const subscription = subscriptions[feedName];
+
+            const isPM = !interaction.guildId;
+            if (isPM) {
+                const userID = interaction.user.id
+                const isUserSubscribed = subscription!["user"].includes(userID);
+                return isUserSubscribed
+            } else {
+                const channelID = interaction.channelId;
+                const isChannelSubscribed = subscription!["channel"].includes(channelID);
+                return isChannelSubscribed;
+            }
+        })
+        .slice(0, 25);
+
+    await interaction.respond(
+        choices.map(name => ({ name, value: name }))
+    );
 }
 
-export async function execute(interaction) {
+export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral }); // Edit the message flag ?
 
-    const feedName = interaction.options.getString('feedname');
+    const feedName = interaction.options.getString('feedname', true);
 
-    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
+    const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8')) as jsonFeeds;
     const subscriptions = JSON.parse(fs.readFileSync(subscriptionsPath, 'utf-8'));
 
     if (!feeds[feedName]) {
         return await interaction.editReply(`❌ Feed with name \`${feedName}\` doesn't exist.`);
     }
-
-    const feed = feeds[feedName];
 
     // Check if it's private message or guild message
     const isPM = !interaction.guildId;

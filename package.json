@@ -7,14 +7,22 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "deploy-commands": "node ./src/utils/deploy-commands.js",
-    "setup": "node ./src/utils/appInit.js"
+    "build": "tsc",
+    "start": "node ./dist/index.js",
+    "setup": "node ./dist/src/utils/appInit.js",
+    "deploy-commands": "node ./dist/src/utils/deploy-commands.js",
+    "dev": "tsx watch ./src/index.ts",
+    "dev-setup": "tsx ./src/src/utils/appInit.ts",
+    "dev-deploy-commands": "tsx ./src/src/utils/deploy-commands.ts"
   },
   "dependencies": {
     "discord.js": "^14.25.1",
     "dotenv": "^17.2.3",
     "rss-parser": "^3.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   }
 }
