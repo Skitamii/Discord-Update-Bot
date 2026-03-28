@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -8,7 +7,7 @@ loadData();
 
 function loadData() {
     console.log("Setup files...");
-    const dataFolder = `${__dirname}/../../data`;
+    const dataFolder = `${__dirname}/../data`;
     const feedFile = `${dataFolder}/feeds.json`;
     const subscriptionFile = `${dataFolder}/subscriptions.json`;
     try {

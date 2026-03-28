@@ -1,13 +1,15 @@
-import 'dotenv/config';
-import { SlashCommandBuilder, MessageFlags, PermissionFlagsBits } from 'discord.js';
+import { SlashCommandBuilder, MessageFlags, PermissionFlagsBits, ChatInputCommandInteraction } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
 import { checkRSSFeed } from '../utils/rssParser.js';
 import { validateThumbnailURL, verifyAndSetHEXColor } from '../utils/verificator.js';
+import { config } from '../utils/types.js';
+import { fileURLToPath } from 'url';
 
-const foldersPath = './src';
-const feedsPath = path.join(foldersPath, './../data/feeds.json');
-const subscriptionsPath = path.join(foldersPath, './../data/subscriptions.json');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const feedsPath = path.join(__dirname, './../data/feeds.json');
+const subscriptionsPath = path.join(__dirname, './../data/subscriptions.json');
 
 export const data = new SlashCommandBuilder()
     .setName('add')
@@ -33,18 +35,19 @@ export const data = new SlashCommandBuilder()
             .setDescription('Color of the Embed (default random)')
             .setRequired(false)
     );
-export async function execute(interaction) {
-    if (interaction.user.id !== process.env.ADMIN_ID) return;
+
+export async function execute(interaction: ChatInputCommandInteraction) {
+    if (interaction.user.id !== config.ADMIN_ID) return;
 
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-    const feedName = (interaction.options.getString('feedname'));
-    const url = (interaction.options.getString('url')).toLowerCase();
+    const feedName = (interaction.options.getString('feedname', true));
+    const url = (interaction.options.getString('url', true)).toLowerCase();
     const thumbnail = (interaction.options.getString('thumbnail') || '').toLowerCase(); // Need to verify if it's image
-    let embedColor = (interaction.options.getString('embedcolor') || '').toUpperCase();
+    const embedColorInput = (interaction.options.getString('embedcolor') || '').toUpperCase();
 
     // validate color
-    embedColor = verifyAndSetHEXColor(embedColor);
+    let embedColor = verifyAndSetHEXColor(embedColorInput);
 
     // validate URL
     try {

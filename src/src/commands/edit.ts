@@ -1,13 +1,15 @@
-import 'dotenv/config';
-import { SlashCommandBuilder, MessageFlags, PermissionFlagsBits } from 'discord.js';
+import { SlashCommandBuilder, MessageFlags, PermissionFlagsBits, ChatInputCommandInteraction, AutocompleteInteraction } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
 import { checkRSSFeed } from '../utils/rssParser.js';
 import { validateThumbnailURL, verifyAndSetHEXColor } from '../utils/verificator.js';
+import { config } from '../utils/types.js';
+import { fileURLToPath } from 'url';
 
-const foldersPath = './src';
-const feedsPath = path.join(foldersPath, './../data/feeds.json');
-const subscriptionsPath = path.join(foldersPath, './../data/subscriptions.json');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const feedsPath = path.join(__dirname, './../data/feeds.json');
+const subscriptionsPath = path.join(__dirname, './../data/subscriptions.json');
 
 export const data = new SlashCommandBuilder()
     .setName('edit')
@@ -45,7 +47,7 @@ export const data = new SlashCommandBuilder()
             .setRequired(false)
     );
 
-export async function autocomplete(interaction) {
+export async function autocomplete(interaction: AutocompleteInteraction) {
     const focusedValue = interaction.options.getFocused();
     const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
 
@@ -58,14 +60,14 @@ export async function autocomplete(interaction) {
     );
 }
 
-export async function execute(interaction) {
-    if (interaction.user.id !== process.env.ADMIN_ID) return;
+export async function execute(interaction: ChatInputCommandInteraction) {
+    if (interaction.user.id !== config.ADMIN_ID) return;
 
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-    const feedName = interaction.options.getString('feedname');
+    const feedName = interaction.options.getString('feedname', true);
     const newFeedName = interaction.options.getString('newfeedname');
-    const isDisabled = interaction.options.getString('disabled');
+    const isDisabled = interaction.options.getBoolean('disabled');
     const url = (interaction.options.getString('url') || '').toLowerCase();
     const thumbnail = (interaction.options.getString('thumbnail') || '').toLowerCase();
     let embedColor = (interaction.options.getString('embedcolor') || '').toUpperCase();

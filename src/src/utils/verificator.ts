@@ -1,9 +1,9 @@
-export function verifyAndSetHEXColor(color) {
+export function verifyAndSetHEXColor(color: string) {
     if (color && /^[0-9A-F]{6}$/i.test(color)) {
         return `#${color}`;
     } else if (color && /^#[0-9A-F]{6}$/i.test(color)) {
         return `${color}`;
-    } else if (!color) {
+    } else {
         return randomHexColor();
     }
 }
@@ -17,7 +17,7 @@ function randomHexColor() {
     return color;
 }
 
-export async function validateThumbnailURL(url) {
+export async function validateThumbnailURL(url: string) {
     // Check if empty
     if (!url || url.trim() === '') {
         return true;
@@ -38,8 +38,7 @@ export async function validateThumbnailURL(url) {
     // Check if URL points to an actual image
     try {
         const response = await fetch(url, {
-            method: 'HEAD',
-            timeout: 5000 // 5 second timeout
+            method: 'HEAD'
         });
 
         if (!response.ok) {

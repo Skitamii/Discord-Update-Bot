@@ -1,11 +1,13 @@
-import { SlashCommandBuilder, MessageFlags } from 'discord.js';
+import { SlashCommandBuilder, MessageFlags, ChatInputCommandInteraction, AutocompleteInteraction } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
 import { checkFeed } from '../utils/rssParser.js';
+import { fileURLToPath } from 'url';
 
-const foldersPath = './src';
-const feedsPath = path.join(foldersPath, './../data/feeds.json');
-const subscriptionsPath = path.join(foldersPath, './../data/subscriptions.json');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const feedsPath = path.join(__dirname, './../data/feeds.json');
+const subscriptionsPath = path.join(__dirname, './../data/subscriptions.json');
 
 export const data = new SlashCommandBuilder()
     .setName('update')
@@ -21,7 +23,7 @@ export const data = new SlashCommandBuilder()
             .setDescription('true = only visible by you')
     );
 
-export async function autocomplete(interaction) {
+export async function autocomplete(interaction: AutocompleteInteraction) {
     const focusedValue = interaction.options.getFocused();
     const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
     const subscriptions = JSON.parse(fs.readFileSync(subscriptionsPath, 'utf-8'));
@@ -50,7 +52,7 @@ export async function autocomplete(interaction) {
     );
 }
 
-export async function execute(interaction) {
+export async function execute(interaction: ChatInputCommandInteraction) {
     const ephemeral = interaction.options.getBoolean('ephemeral');
     if (ephemeral == false) { // false because null is false too
         await interaction.deferReply();
@@ -58,9 +60,11 @@ export async function execute(interaction) {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     }
 
-    const feedName = interaction.options.getString('feedname');
+    const feedName = interaction.options.getString('feedname', true);
     const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
     const feed = feeds[feedName];
 
-    checkFeed(interaction, feed, feedName)
+    if (!feed) return await interaction.editReply('❌ Feed not found.');
+
+    await checkFeed(interaction, feed, feedName)
 }

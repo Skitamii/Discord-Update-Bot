@@ -1,10 +1,12 @@
-import { SlashCommandBuilder, MessageFlags } from 'discord.js';
+import { SlashCommandBuilder, MessageFlags, ChatInputCommandInteraction, AutocompleteInteraction } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
-const foldersPath = './src';
-const feedsPath = path.join(foldersPath, './../data/feeds.json');
-const subscriptionsPath = path.join(foldersPath, './../data/subscriptions.json');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const feedsPath = path.join(__dirname, './../data/feeds.json');
+const subscriptionsPath = path.join(__dirname, './../data/subscriptions.json');
 
 export const data = new SlashCommandBuilder()
     .setName('subscribe')
@@ -16,7 +18,7 @@ export const data = new SlashCommandBuilder()
             .setAutocomplete(true)
     );
 
-export async function autocomplete(interaction) {
+export async function autocomplete(interaction: AutocompleteInteraction) {
     const focusedValue = interaction.options.getFocused();
     const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
     const subscriptions = JSON.parse(fs.readFileSync(subscriptionsPath, 'utf-8'));
@@ -45,10 +47,10 @@ export async function autocomplete(interaction) {
     );
 }
 
-export async function execute(interaction) {
+export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral }); // Edit the message flag ?
 
-    const feedName = interaction.options.getString('feedname');
+    const feedName = interaction.options.getString('feedname', true);
 
     const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
     const subscriptions = JSON.parse(fs.readFileSync(subscriptionsPath, 'utf-8'));
@@ -78,7 +80,7 @@ export async function execute(interaction) {
         const channelID = interaction.channelId;
 
         if (subscriptions[feedName]["channel"].includes(channelID)) {
-            return await interaction.editReply(`❌ This channel is not subscribe to **${feedName}** here.`);
+            return await interaction.editReply(`❌ This channel is already subscribe to **${feedName}** here.`);
         }
 
         subscriptions[feedName]["channel"].push(channelID);
