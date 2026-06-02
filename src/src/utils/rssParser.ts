@@ -40,10 +40,25 @@ export async function checkFeed(clientOrInteraction: Client | ChatInputCommandIn
             await notifySubscribers(clientOrInteraction, feed, parsedLastItem, feedName, feeds);
         }
     } catch (error) {
+        const errorCode = (error as Error)?.message;
+        const isTemporaryError = 
+            errorCode === 'ECONNRESET' ||
+            errorCode === 'ENOTFOUND' ||
+            errorCode === 'ETIMEDOUT' ||
+            error instanceof Error && (
+                error.message.includes('TLS') ||
+                error.message.includes('socket disconnected')
+            );
+
+        if (isTemporaryError) {
+            console.log(`[${feedName}] temp network error: ${error}`);
+            return;
+        }
+
         const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8')) as jsonFeeds;
         feeds[feedName]!.disabled = true;
         fs.writeFileSync(feedsPath, JSON.stringify(feeds, null, 2));
-        throw new Error(error instanceof Error ? error.message : String(error));
+        throw new Error(error instanceof Error ? `ERROR: ${error.message}` : `ERROR: ${String(error)}`);
     }
 }
 
