@@ -36,6 +36,7 @@ export async function checkFeed(clientOrInteraction: Client | ChatInputCommandIn
             // Update available
             let feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
             feeds[feedName].lastState = parsedLastItem.pubDate;
+            feeds[feedName].lastUpdatedAt = new Date(parsedLastItem.pubDate || parsedLastItem.isoDate || '').toLocaleString();
             fs.writeFileSync(feedsPath, JSON.stringify(feeds, null, 2));
             await notifySubscribers(clientOrInteraction, feed, parsedLastItem, feedName, feeds);
         }
@@ -72,25 +73,6 @@ async function notifySubscribers(clientOrInteraction: Client | ChatInputCommandI
         const interaction = clientOrInteraction;
         await interaction.editReply({ embeds: [embed] });
     } else {
-        const dateNow = new Date();
-
-        const date = dateNow.toLocaleDateString('fr-FR', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
-
-        const time = dateNow.toLocaleTimeString('fr-FR', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-        });
-
-        if (feeds[feedName]) {
-            feeds[feedName].lastUpdatedAt = `${date} ${time}`;
-            fs.writeFileSync(feedsPath, JSON.stringify(feeds, null, 2));
-        }
-
         const client = clientOrInteraction;
         for (const userID of subscription["user"]) {
             const user = await client.users.fetch(userID);

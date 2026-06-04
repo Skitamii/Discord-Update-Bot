@@ -15,6 +15,9 @@ export const data = new SlashCommandBuilder()
     .setDescription('summarize an update');
 
 export async function execute(interaction: ChatInputCommandInteraction) {
+    const apiKey = process.env['LLM_API_KEY'] as string;
+    if (!apiKey) throw new Error('LLM_API_KEY not defined');
+
     const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8')) as jsonFeeds;
     const availableFeeds = Object.keys(feeds).filter(feed => !feeds[feed]!.disabled);
     if (availableFeeds.length === 0) {
@@ -110,7 +113,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     new StringSelectMenuOptionBuilder()
                         .setLabel((item.title ?? `Update ${idx + 1}`).slice(0, 100))
                         .setValue(String(idx))
-                        .setDescription((item.pubDate ?? '').slice(0, 100))
+                        .setDescription(new Date(item.pubDate ?? '').toLocaleString())
                         .setDefault(idx === selectedUpdateIndex)
                 )
             );
@@ -155,7 +158,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                         new StringSelectMenuOptionBuilder()
                             .setLabel((item.title ?? `Update ${idx + 1}`).slice(0, 100))
                             .setValue(String(idx))
-                            .setDescription((item.pubDate ?? '').slice(0, 100))
+                            .setDescription(new Date(item.pubDate ?? '').toLocaleString())
                             .setDefault(idx === selectedUpdateIndex)
                     )
                 );
@@ -166,6 +169,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 .setStyle(ButtonStyle.Primary);
 
             await updateInteraction.update({
+                content: '',
                 embeds: [embed],
                 components: [
                     new ActionRowBuilder<StringSelectMenuBuilder>()

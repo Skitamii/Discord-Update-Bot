@@ -111,8 +111,12 @@ npm run start
     - ephemeral: true = only visible by you (default true)
 ```
 
+```
+- Summarize: Summarize an update (step by step)
+```
+
 ## ✅ To do list
 
 - [x] Move to Typescript
-- [ ] Add IA to summarize updates
+- [x] Add IA to summarize updates
 - [ ] Add templates example for scraping updates
