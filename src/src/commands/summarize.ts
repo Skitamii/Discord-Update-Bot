@@ -2,9 +2,10 @@ import { SlashCommandBuilder, MessageFlags, ChatInputCommandInteraction, StringS
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import type { jsonFeeds } from '../utils/types.js';
+import type { jsonArticle, jsonArticles, jsonFeeds, jsonItem } from '../utils/types.js';
 import { checkRSSFeed } from '../utils/rssParser.js';
 import { createUpdateEmbed } from '../utils/embedBuilder.js';
+import { executeGetAllArticle, executeGetSpecificUpdate } from '../utils/scraper.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -80,10 +81,30 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             components: [],
         });
 
-        const parsedFeed = await checkRSSFeed(feed.url);
-        const items = parsedFeed.items.slice(0, 25); // Max 25 for Discord
+        // BUG POUR SCRAPER
 
-        if (items.length === 0) {
+        let jsonArticles: jsonArticles = [];
+        if (feed.isRssFeed) {
+            const parsedFeed = await checkRSSFeed(feed.url);
+            const items = parsedFeed.items//.slice(0, 25); // Max 25 for Discord
+            for (let index = 0; index < items.length; index++) {
+                const element = items[index];
+                const jsonArticle: jsonArticle = {
+                    title: element?.title || '',
+                    url: element?.link || '',
+                    pubDate: element?.pubDate || '',
+                    lastState: '',
+                }
+                jsonArticles.push(jsonArticle);
+                if (index == 25) {
+                    break;
+                }
+            }
+        } else {
+            jsonArticles = await executeGetAllArticle(feedName) || [];
+        }
+
+        if (jsonArticles.length === 0) {
             await interaction.editReply({
                 content: '❌ No updates found for this feed.',
                 components: [],
@@ -109,7 +130,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setCustomId('summarize_update_select')
             .setPlaceholder('Choose an update...')
             .addOptions(
-                items.map((item, idx) =>
+                jsonArticles.map((item, idx) =>
                     new StringSelectMenuOptionBuilder()
                         .setLabel((item.title ?? `Update ${idx + 1}`).slice(0, 100))
                         .setValue(String(idx))
@@ -138,8 +159,22 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
             const index = Number(updateInteraction.values[0]);
             selectedUpdateIndex = index;
-            const item = items[index];
+            const jsonArticleTitle = jsonArticles[index]?.title;
+            if (!jsonArticleTitle) {
+                return await updateInteraction.update("Error: Article title not found")
+            }
+            const item = await executeGetSpecificUpdate(feedName, jsonArticleTitle);
             if (!item) return;
+
+            const jsonItem: jsonItem = {
+                content: item?.content || '',
+                contentSnippet: item?.contentSnippet || '',
+                link: item?.link || '',
+                pubDate: item?.pubDate || '',
+                title: item?.title || '',
+                enclosureUrl: item?.enclosureUrl || undefined,
+                lastState: item?.pubDate || ''
+            }
 
             selectedItem = {
                 feedName: feedName,
@@ -148,13 +183,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 url: item.link ?? ''
             };
 
-            const embed = createUpdateEmbed(feed, feedName, item);
+            const embed = createUpdateEmbed(feed, feedName, jsonItem);
 
             const refreshedUpdateSelect = new StringSelectMenuBuilder()
                 .setCustomId('summarize_update_select')
                 .setPlaceholder('Choose an update...')
                 .addOptions(
-                    items.map((item, idx) =>
+                    jsonArticles.map((item, idx) =>
                         new StringSelectMenuOptionBuilder()
                             .setLabel((item.title ?? `Update ${idx + 1}`).slice(0, 100))
                             .setValue(String(idx))

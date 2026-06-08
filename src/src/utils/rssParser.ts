@@ -3,8 +3,9 @@ import fs from 'fs';
 import path from 'path';
 import rssParser, { type Item } from "rss-parser"
 import { createUpdateEmbed } from './embedBuilder.js';
-import type { jsonFeed, jsonFeeds, jsonSubscription, jsonSubscriptions } from './types.js';
+import type { jsonFeed, jsonFeeds, jsonItem, jsonSubscription, jsonSubscriptions } from './types.js';
 import { fileURLToPath } from 'url';
+import { executeGetLastArticle, executeGetLastUpdate } from './scraper.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,25 +25,64 @@ export async function checkFeed(clientOrInteraction: Client | ChatInputCommandIn
     if (feed.disabled) return;
 
     try {
-        const parsedFeed = await checkRSSFeed(feed.url);
-        const parsedLastItem = parsedFeed.items[0];
+        let parsedLastItem: jsonItem = {
+            content: '',
+            contentSnippet: '',
+            link: '',
+            pubDate: '',
+            title: '',
+            enclosureUrl: undefined,
+            lastState: ''
+        };
+
+        if (feed.isRssFeed) {
+            const parsedFeed = await checkRSSFeed(feed.url);
+            const parsedFeedItem = parsedFeed.items[0];
+            parsedLastItem = {
+                content: parsedFeedItem?.content || '',
+                contentSnippet: parsedFeedItem?.contentSnippet || '',
+                link: parsedFeedItem?.link || '',
+                pubDate: parsedFeedItem?.pubDate || '',
+                title: parsedFeedItem?.title || '',
+                enclosureUrl: parsedFeedItem?.enclosure?.url || undefined,
+                lastState: parsedFeedItem?.pubDate || ''
+            }
+        } else {
+            const lastArticle = await executeGetLastArticle(feedName);
+            if (clientOrInteraction instanceof ChatInputCommandInteraction || lastArticle?.lastState != feed.lastState) {
+                const lastUpdate = await executeGetLastUpdate(feedName);
+                parsedLastItem = {
+                    content: lastUpdate?.content || '',
+                    contentSnippet: lastUpdate?.contentSnippet || '',
+                    link: lastUpdate?.link || '',
+                    pubDate: lastUpdate?.pubDate || '',
+                    title: lastUpdate?.title || '',
+                    enclosureUrl: lastUpdate?.enclosureUrl || undefined,
+                    lastState: lastUpdate?.lastState || ''
+                }
+            } else {
+                return;
+            }
+        }
         if (!parsedLastItem) return;
+        if (parsedLastItem.lastState == '') return;
+
         if (clientOrInteraction instanceof ChatInputCommandInteraction) {
             let feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
             await notifySubscribers(clientOrInteraction, feed, parsedLastItem, feedName, feeds);
             return;
         }
-        if (parsedLastItem.pubDate != feed.lastState) {
+        if (parsedLastItem.lastState != feed.lastState) {
             // Update available
             let feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
-            feeds[feedName].lastState = parsedLastItem.pubDate;
-            feeds[feedName].lastUpdatedAt = new Date(parsedLastItem.pubDate || parsedLastItem.isoDate || '').toLocaleString();
+            feeds[feedName].lastState = parsedLastItem.lastState;
+            feeds[feedName].lastUpdatedAt = new Date(parsedLastItem.pubDate || '').toLocaleString();
             fs.writeFileSync(feedsPath, JSON.stringify(feeds, null, 2));
             await notifySubscribers(clientOrInteraction, feed, parsedLastItem, feedName, feeds);
         }
     } catch (error) {
         const errorCode = (error as Error)?.message;
-        const isTemporaryError = 
+        const isTemporaryError =
             errorCode === 'ECONNRESET' ||
             errorCode === 'ENOTFOUND' ||
             errorCode === 'ETIMEDOUT' ||
@@ -63,7 +103,7 @@ export async function checkFeed(clientOrInteraction: Client | ChatInputCommandIn
     }
 }
 
-async function notifySubscribers(clientOrInteraction: Client | ChatInputCommandInteraction, feed: jsonFeed, item: Item, feedName: string, feeds: jsonFeeds) {
+async function notifySubscribers(clientOrInteraction: Client | ChatInputCommandInteraction, feed: jsonFeed, item: jsonItem, feedName: string, feeds: jsonFeeds) {
     const subscriptions = JSON.parse(fs.readFileSync(subscriptionsPath, 'utf-8')) as jsonSubscriptions;
     const embed = createUpdateEmbed(feed, feedName, item);
     const subscription = subscriptions[feedName] as jsonSubscription;

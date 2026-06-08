@@ -20,6 +20,7 @@ export interface jsonFeed {
     disabled: boolean;
     thumbnail: string;
     embedColor: ColorResolvable;
+    isRssFeed: boolean
 }
 
 export interface jsonFeeds {
@@ -33,6 +34,27 @@ export interface jsonSubscription {
 
 export interface jsonSubscriptions {
     [feedName: string]: jsonSubscription;
+}
+
+export type jsonArticles = jsonArticle[];
+
+export interface jsonArticle {
+    title: string,
+    url: string,
+    pubDate: string,
+    lastState: string
+}
+
+export type jsonItems = jsonItem[];
+
+export interface jsonItem {
+    content: string,
+    contentSnippet: string,
+    link: string,
+    pubDate: string,
+    title: string,
+    enclosureUrl: string | undefined,
+    lastState: string
 }
 
 export const config = {

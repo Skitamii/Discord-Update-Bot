@@ -4,13 +4,15 @@ import { checkFeed } from '../utils/rssParser.js';
 import type { Client } from 'discord.js';
 import { config, type jsonFeed, type jsonFeeds } from './types.js';
 import { fileURLToPath } from 'url';
+import { addAllScraper } from './scraper.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const feedsPath = path.join(__dirname, './../data/feeds.json');
 
-export function startFeedChecker(client: Client) {
+export async function startFeedChecker(client: Client) {
     const checkInterval = config.CHECK_INTERVAL || 5;
+    await addAllScraper();
     checkAllFeeds(client);
     setInterval(async () => {
         await checkAllFeeds(client);

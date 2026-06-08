@@ -1,8 +1,8 @@
 import { EmbedBuilder } from 'discord.js';
 import rssParser from "rss-parser";
-import type { jsonFeed } from './types.js';
+import type { jsonFeed, jsonItem } from './types.js';
 
-export function createUpdateEmbed(feed: jsonFeed, feedName: string, item: rssParser.Item) {
+export function createUpdateEmbed(feed: jsonFeed, feedName: string, item: jsonItem) {
     const embed = new EmbedBuilder()
         .setColor(feed.embedColor)
         .setAuthor({ name: feedName })
@@ -12,11 +12,9 @@ export function createUpdateEmbed(feed: jsonFeed, feedName: string, item: rssPar
         .setFooter({
             text: `Update from ${feedName}`
         })
-        .setTimestamp(new Date(item.pubDate || item.isoDate || ''));
-    if (item.enclosure != undefined) {
-        if (item.enclosure.url != undefined) {
-            embed.setImage(item.enclosure.url);
-        }
+        .setTimestamp(new Date(item.pubDate || ''));
+    if (item.enclosureUrl != undefined) {
+        embed.setImage(item.enclosureUrl);
     }
     if (feed.thumbnail) {
         embed.setThumbnail(feed.thumbnail);
