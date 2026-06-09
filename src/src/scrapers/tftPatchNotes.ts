@@ -13,22 +13,23 @@ export async function getLastArticle(): Promise<jsonArticle | null> {
     const response = await axios.get(scraper.feedURL);
     const responseData = load(response.data);
 
-    const firstArticle = responseData('a[data-testid="articlefeaturedcard-component"]').first();
-    if (!firstArticle.length) {
+    const article = responseData('a[data-testid="articlefeaturedcard-component"]').first();
+    if (!article.length) {
         console.error('[LOL] Article grid not found');
         return null;
     }
 
-    const article = firstArticle;
-    const articleAttr = firstArticle.attr();
+    const articleAttr = article.attr();
     const articleUrl = new URL(articleAttr?.href!, scraper.feedURL).toString() || scraper.feedURL
-    const articlePubDate = responseData(article).find('time').attr('datetime');
+    const articlePubDate = responseData(article).find('time').attr('datetime') || '';
+
+    const articlePubDateDate = new Date(articlePubDate).toLocaleString();
 
     const jsonScrapedArticle: jsonArticle = {
         title: articleAttr!['aria-label'] || scraper.feedName,
         url: articleUrl,
         lastState: articleUrl,
-        pubDate: articlePubDate || ''
+        pubDate: articlePubDateDate
     }
 
     return jsonScrapedArticle;
@@ -51,12 +52,15 @@ export async function getAllArticle(): Promise<jsonArticles | null> {
         const articleAttribs = article?.attribs;
         const articleTitle = articleAttribs!['aria-label'];
         const articleURL = new URL(articleAttribs?.href!, scraper.feedURL).toString();
-        const articlePubDate = responseData(article).find('time').attr('datetime');
+        const articlePubDate = responseData(article).find('time').attr('datetime') || '';
+
+        const articlePubDateDate = new Date(articlePubDate).toLocaleString();
+
         const jsonArticle: jsonArticle = {
             title: articleTitle || scraper.feedName,
             url: articleURL || scraper.feedURL,
             lastState: articleAttribs?.href!,
-            pubDate: articlePubDate || ''
+            pubDate: articlePubDateDate
         }
         articleList.push(jsonArticle);
     }
@@ -68,15 +72,15 @@ export async function getLastUpdate(): Promise<jsonItem | null> {
     const response = await axios.get(scraper.feedURL);
     const responseData = load(response.data);
 
-    const firstArticle = responseData('a[data-testid="articlefeaturedcard-component"]').first();
-    if (!firstArticle.length) {
+    const article = responseData('a[data-testid="articlefeaturedcard-component"]').first();
+    if (!article.length) {
         console.error('[LOL] Article grid not found');
         return null;
     }
 
-    const article = firstArticle.attr();
-    const articleURL = new URL(article?.href!, scraper.feedURL).toString();
-    const articleTitle = article!['aria-label'];
+    const articleAttr = article.attr();
+    const articleURL = new URL(articleAttr?.href!, scraper.feedURL).toString();
+    const articleTitle = articleAttr!['aria-label'];
 
     const itemResponse = await axios.get(articleURL);
     const item = load(itemResponse.data);
@@ -87,20 +91,14 @@ export async function getLastUpdate(): Promise<jsonItem | null> {
 
     const itemContentSnippet = itemContainer.text().trim();
 
-    let pubDate = new Date().toUTCString();
-    const dateElement = item('time[datetime]').first();
-    if (dateElement.length) {
-        const dateAttr = dateElement.attr('datetime');
-        if (dateAttr) {
-            pubDate = new Date(dateAttr).toUTCString();
-        }
-    }
+    const articlePubDate = responseData(article).find('time').attr('datetime') || '';
+    const articlePubDateDate = new Date(articlePubDate).toLocaleString();
 
     const jsonItem: jsonItem = {
         content: itemContent,
         contentSnippet: itemContentSnippet,
         link: articleURL,
-        pubDate,
+        pubDate: articlePubDateDate,
         title: articleTitle || scraper.feedName,
         enclosureUrl: itemEnclosureUrl || '',
         lastState: articleURL
@@ -113,15 +111,15 @@ export async function getSpecificUpdate(updateName: String): Promise<jsonItem | 
     const response = await axios.get(scraper.feedURL);
     const responseData = load(response.data);
 
-    const articles = responseData(`a[aria-label="${updateName}"]`);
-    if (!articles.length) {
+    const article = responseData(`a[aria-label="${updateName}"]`);
+    if (!article.length) {
         console.error('[LOL] Article grid not found');
         return null;
     }
 
-    const article = articles.attr();
-    const articleURL = new URL(article?.href!, scraper.feedURL).toString();
-    const articleTitle = article!['aria-label'];
+    const articleAttr = article.attr();
+    const articleURL = new URL(articleAttr?.href!, scraper.feedURL).toString();
+    const articleTitle = articleAttr!['aria-label'];
 
     const itemResponse = await axios.get(articleURL);
     const item = load(itemResponse.data);
@@ -132,20 +130,14 @@ export async function getSpecificUpdate(updateName: String): Promise<jsonItem | 
 
     const itemContentSnippet = itemContainer.text().trim();
 
-    let pubDate = new Date().toUTCString();
-    const dateElement = item('time[datetime]').first();
-    if (dateElement.length) {
-        const dateAttr = dateElement.attr('datetime');
-        if (dateAttr) {
-            pubDate = new Date(dateAttr).toUTCString();
-        }
-    }
+    const articlePubDate = responseData(article).find('time').attr('datetime') || '';
+    const articlePubDateDate = new Date(articlePubDate).toLocaleString();
 
     const jsonItem: jsonItem = {
         content: itemContent,
         contentSnippet: itemContentSnippet,
         link: articleURL,
-        pubDate,
+        pubDate: articlePubDateDate,
         title: articleTitle || scraper.feedName,
         enclosureUrl: itemEnclosureUrl || '',
         lastState: articleURL

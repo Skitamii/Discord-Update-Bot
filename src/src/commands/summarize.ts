@@ -81,8 +81,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             components: [],
         });
 
-        // BUG POUR SCRAPER
-
         let jsonArticles: jsonArticles = [];
         if (feed.isRssFeed) {
             const parsedFeed = await checkRSSFeed(feed.url);
@@ -92,7 +90,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 const jsonArticle: jsonArticle = {
                     title: element?.title || '',
                     url: element?.link || '',
-                    pubDate: element?.pubDate || '',
+                    pubDate: new Date(element?.pubDate || '').toLocaleString(),
                     lastState: '',
                 }
                 jsonArticles.push(jsonArticle);
@@ -134,7 +132,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     new StringSelectMenuOptionBuilder()
                         .setLabel((item.title ?? `Update ${idx + 1}`).slice(0, 100))
                         .setValue(String(idx))
-                        .setDescription(new Date(item.pubDate ?? '').toLocaleString())
+                        .setDescription(item.pubDate)
                         .setDefault(idx === selectedUpdateIndex)
                 )
             );
@@ -163,24 +161,29 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             if (!jsonArticleTitle) {
                 return await updateInteraction.update("Error: Article title not found")
             }
-            const item = await executeGetSpecificUpdate(feedName, jsonArticleTitle);
-            if (!item) return;
-
-            const jsonItem: jsonItem = {
-                content: item?.content || '',
-                contentSnippet: item?.contentSnippet || '',
-                link: item?.link || '',
-                pubDate: item?.pubDate || '',
-                title: item?.title || '',
-                enclosureUrl: item?.enclosureUrl || undefined,
-                lastState: item?.pubDate || ''
+            let jsonItem:jsonItem | null;
+            if (feed.isRssFeed) {
+                const rssFeeds = await checkRSSFeed(feed.url);
+                const rssFeed = rssFeeds.items[index];
+                jsonItem = {
+                    content: rssFeed?.content || '',
+                    contentSnippet: rssFeed?.contentSnippet || '',
+                    link: rssFeed?.link || '',
+                    pubDate: new Date(rssFeed?.pubDate || '').toLocaleString() || '',
+                    title: rssFeed?.title || '',
+                    enclosureUrl: rssFeed?.enclosure?.url || undefined,
+                    lastState: rssFeed?.pubDate || ''
+                }
+            }else{
+                jsonItem = await executeGetSpecificUpdate(feedName, jsonArticleTitle);
             }
+            if (!jsonItem) return;
 
             selectedItem = {
                 feedName: feedName,
-                title: item.title ?? 'Unknown',
-                content: item.contentSnippet ?? item.content ?? 'Unknown',
-                url: item.link ?? ''
+                title: jsonItem.title ?? 'Unknown',
+                content: jsonItem.contentSnippet ?? jsonItem.content ?? 'Unknown',
+                url: jsonItem.link ?? ''
             };
 
             const embed = createUpdateEmbed(feed, feedName, jsonItem);
@@ -193,7 +196,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                         new StringSelectMenuOptionBuilder()
                             .setLabel((item.title ?? `Update ${idx + 1}`).slice(0, 100))
                             .setValue(String(idx))
-                            .setDescription(new Date(item.pubDate ?? '').toLocaleString())
+                            .setDescription(item.pubDate)
                             .setDefault(idx === selectedUpdateIndex)
                     )
                 );

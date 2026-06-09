@@ -29,7 +29,7 @@ export async function checkFeed(clientOrInteraction: Client | ChatInputCommandIn
             content: '',
             contentSnippet: '',
             link: '',
-            pubDate: '',
+            pubDate: new Date().toLocaleString(),
             title: '',
             enclosureUrl: undefined,
             lastState: ''
@@ -42,9 +42,9 @@ export async function checkFeed(clientOrInteraction: Client | ChatInputCommandIn
                 content: parsedFeedItem?.content || '',
                 contentSnippet: parsedFeedItem?.contentSnippet || '',
                 link: parsedFeedItem?.link || '',
-                pubDate: parsedFeedItem?.pubDate || '',
+                pubDate: new Date(parsedFeedItem?.pubDate || '').toLocaleString(),
                 title: parsedFeedItem?.title || '',
-                enclosureUrl: parsedFeedItem?.enclosure?.url || undefined,
+                enclosureUrl: parsedFeedItem?.enclosure?.url || '',
                 lastState: parsedFeedItem?.pubDate || ''
             }
         } else {
@@ -57,7 +57,7 @@ export async function checkFeed(clientOrInteraction: Client | ChatInputCommandIn
                     link: lastUpdate?.link || '',
                     pubDate: lastUpdate?.pubDate || '',
                     title: lastUpdate?.title || '',
-                    enclosureUrl: lastUpdate?.enclosureUrl || undefined,
+                    enclosureUrl: lastUpdate?.enclosureUrl || '',
                     lastState: lastUpdate?.lastState || ''
                 }
             } else {
@@ -76,7 +76,7 @@ export async function checkFeed(clientOrInteraction: Client | ChatInputCommandIn
             // Update available
             let feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
             feeds[feedName].lastState = parsedLastItem.lastState;
-            feeds[feedName].lastUpdatedAt = new Date(parsedLastItem.pubDate || '').toLocaleString();
+            feeds[feedName].lastUpdatedAt = parsedLastItem.pubDate;
             fs.writeFileSync(feedsPath, JSON.stringify(feeds, null, 2));
             await notifySubscribers(clientOrInteraction, feed, parsedLastItem, feedName, feeds);
         }

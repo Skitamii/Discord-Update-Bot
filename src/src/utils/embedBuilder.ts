@@ -3,6 +3,11 @@ import rssParser from "rss-parser";
 import type { jsonFeed, jsonItem } from './types.js';
 
 export function createUpdateEmbed(feed: jsonFeed, feedName: string, item: jsonItem) {
+    const parts = item.pubDate?.trim().split(" ");
+    const [day, month, year] = parts?.[0]?.split("/") ?? [];
+    const timePart = parts?.[1] ?? "00:00:00";
+    const timestamp = Date.parse(`${year}-${month}-${day}T${timePart}`);
+
     const embed = new EmbedBuilder()
         .setColor(feed.embedColor)
         .setAuthor({ name: feedName })
@@ -12,7 +17,7 @@ export function createUpdateEmbed(feed: jsonFeed, feedName: string, item: jsonIt
         .setFooter({
             text: `Update from ${feedName}`
         })
-        .setTimestamp(new Date(item.pubDate || ''));
+        .setTimestamp(new Date(timestamp || ''));
     if (item.enclosureUrl != undefined) {
         embed.setImage(item.enclosureUrl);
     }
