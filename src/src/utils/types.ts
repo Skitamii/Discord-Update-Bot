@@ -41,7 +41,7 @@ export type jsonArticles = jsonArticle[];
 export interface jsonArticle {
     title: string,
     url: string,
-    pubDate: string,
+    pubDate: number,
     lastState: string
 }
 
@@ -51,7 +51,7 @@ export interface jsonItem {
     content: string,
     contentSnippet: string,
     link: string,
-    pubDate: string,
+    pubDate: number,
     title: string,
     enclosureUrl: string | undefined,
     lastState: string

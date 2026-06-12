@@ -136,7 +136,7 @@ npm run start
 ```
 ```
 ❓ I don't have a display/GUI to let work playwright on ubuntu, what to do ?
-✅ Check "Xvfb" module for ubuntu
+✅ Check "Xvfb" module for ubuntu > I've made a script, do "npm run scraper-ubuntu-setup" 
 ```
 ```
 ❓ There is a bug on this app !

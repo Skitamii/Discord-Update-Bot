@@ -39,7 +39,7 @@ export async function getLastArticle(): Promise<jsonArticle | null> {
         title: firstArticle?.title || scraper.feedName,
         url: firstArticleUrl,
         lastState: firstArticleUrl,
-        pubDate: new Date(firstArticle?.date).toLocaleString() || new Date(Date.now()).toLocaleString()
+        pubDate:  new Date(firstArticle?.date).getTime() || new Date(Date.now()).getTime()
     };
 
     await browser.close();
@@ -79,7 +79,7 @@ export async function getAllArticle(): Promise<jsonArticles | null> {
             title: element?.title || scraper.feedName,
             url: articleUrl,
             lastState: articleUrl,
-            pubDate: new Date(element?.date).toLocaleString() || new Date(Date.now()).toLocaleString()
+            pubDate: new Date(element?.date).getTime() || new Date(Date.now()).getTime()
         };
         articleList.push(jsonArticle)
     });
@@ -140,7 +140,7 @@ export async function getLastUpdate(): Promise<jsonItem | null> {
         content: item?.content,
         contentSnippet: item?.contentSnippet,
         link: firstArticleUrl,
-        pubDate: new Date(firstArticle?.date).toLocaleString() || new Date(Date.now()).toLocaleString(),
+        pubDate: new Date(firstArticle?.date).getTime() || new Date(Date.now()).getTime(),
         title: firstArticle?.title || scraper.feedName,
         enclosureUrl: item?.enclosureUrl || '',
         lastState: firstArticleUrl
@@ -202,7 +202,7 @@ export async function getSpecificUpdate(updateName: String): Promise<jsonItem | 
         content: item?.content,
         contentSnippet: item?.contentSnippet,
         link: firstArticleUrl,
-        pubDate: new Date(firstArticle?.date).toLocaleString() || new Date(Date.now()).toLocaleString(),
+        pubDate: new Date(firstArticle?.date).getTime() || new Date(Date.now()).getTime(),
         title: firstArticle?.title || scraper.feedName,
         enclosureUrl: item?.enclosureUrl || '',
         lastState: firstArticleUrl

@@ -13,7 +13,8 @@
     "deploy-commands": "node ./dist/src/utils/deploy-commands.js",
     "dev": "tsx watch ./src/index.ts",
     "dev-setup": "tsx ./src/src/utils/appInit.ts",
-    "dev-deploy-commands": "tsx ./src/src/utils/deploy-commands.ts"
+    "dev-deploy-commands": "tsx ./src/src/utils/deploy-commands.ts",
+    "scraper-ubuntu-setup": "npx patchright install chromium && npx patchright install-deps chromium"
   },
   "dependencies": {
     "axios": "^1.6.0",

@@ -23,7 +23,7 @@ export async function getLastArticle(): Promise<jsonArticle | null> {
     const articleUrl = new URL(articleAttr?.href!, scraper.feedURL).toString() || scraper.feedURL
     const articlePubDate = responseData(article).find('time').attr('datetime') || '';
 
-    const articlePubDateDate = new Date(articlePubDate).toLocaleString();
+    const articlePubDateDate = new Date(articlePubDate).getTime();
 
     const jsonScrapedArticle: jsonArticle = {
         title: articleAttr!['aria-label'] || scraper.feedName,
@@ -54,7 +54,7 @@ export async function getAllArticle(): Promise<jsonArticles | null> {
         const articleURL = new URL(articleAttribs?.href!, scraper.feedURL).toString();
         const articlePubDate = responseData(article).find('time').attr('datetime') || '';
 
-        const articlePubDateDate = new Date(articlePubDate).toLocaleString();
+        const articlePubDateDate = new Date(articlePubDate).getTime();
 
         const jsonArticle: jsonArticle = {
             title: articleTitle || scraper.feedName,
@@ -92,7 +92,7 @@ export async function getLastUpdate(): Promise<jsonItem | null> {
     const itemContentSnippet = itemContainer.text().trim();
 
     const articlePubDate = responseData(article).find('time').attr('datetime') || '';
-    const articlePubDateDate = new Date(articlePubDate).toLocaleString();
+    const articlePubDateDate = new Date(articlePubDate).getTime();
 
     const jsonItem: jsonItem = {
         content: itemContent,
@@ -131,7 +131,7 @@ export async function getSpecificUpdate(updateName: String): Promise<jsonItem | 
     const itemContentSnippet = itemContainer.text().trim();
 
     const articlePubDate = responseData(article).find('time').attr('datetime') || '';
-    const articlePubDateDate = new Date(articlePubDate).toLocaleString();
+    const articlePubDateDate = new Date(articlePubDate).getTime();
 
     const jsonItem: jsonItem = {
         content: itemContent,

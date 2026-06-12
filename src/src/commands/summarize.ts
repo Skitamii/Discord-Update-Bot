@@ -56,7 +56,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         time: 120000,
     });
 
-    let selectedItem: { feedName: string; title: string; content: string; url: string; pubDate: string; enclosureUrl: string; thumbnail: string } | undefined;
+    let selectedItem: { feedName: string; title: string; content: string; url: string; pubDate: number; enclosureUrl: string; thumbnail: string } | undefined;
     let selectedUpdateIndex: number | null = null;
     let updateCollector: any = null; // Track the collector to close it
 
@@ -90,7 +90,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 const jsonArticle: jsonArticle = {
                     title: element?.title || '',
                     url: element?.link || '',
-                    pubDate: new Date(element?.pubDate || '').toLocaleString(),
+                    pubDate: new Date(element?.pubDate || '').getTime(),
                     lastState: '',
                 }
                 jsonArticles.push(jsonArticle);
@@ -136,7 +136,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     new StringSelectMenuOptionBuilder()
                         .setLabel((item.title ?? `Update ${idx + 1}`).slice(0, 100))
                         .setValue(String(idx))
-                        .setDescription(item.pubDate)
+                        .setDescription(new Date(item.pubDate).toLocaleString())
                         .setDefault(idx === selectedUpdateIndex)
                 )
             );
@@ -178,7 +178,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     content: rssFeed?.content || '',
                     contentSnippet: rssFeed?.contentSnippet || '',
                     link: rssFeed?.link || '',
-                    pubDate: new Date(rssFeed?.pubDate || '').toLocaleString() || '',
+                    pubDate: new Date(rssFeed?.pubDate || '').getTime(),
                     title: rssFeed?.title || '',
                     enclosureUrl: rssFeed?.enclosure?.url || undefined,
                     lastState: rssFeed?.pubDate || ''
@@ -212,7 +212,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                         new StringSelectMenuOptionBuilder()
                             .setLabel((item.title ?? `Update ${idx + 1}`).slice(0, 100))
                             .setValue(String(idx))
-                            .setDescription(item.pubDate)
+                            .setDescription(new Date(item.pubDate).toLocaleString())
                             .setDefault(idx === selectedUpdateIndex)
                     )
                 );

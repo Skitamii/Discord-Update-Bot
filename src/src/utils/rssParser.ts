@@ -29,7 +29,7 @@ export async function checkFeed(clientOrInteraction: Client | ChatInputCommandIn
             content: '',
             contentSnippet: '',
             link: '',
-            pubDate: new Date().toLocaleString(),
+            pubDate: new Date().getTime(),
             title: '',
             enclosureUrl: undefined,
             lastState: ''
@@ -42,7 +42,7 @@ export async function checkFeed(clientOrInteraction: Client | ChatInputCommandIn
                 content: parsedFeedItem?.content || '',
                 contentSnippet: parsedFeedItem?.contentSnippet || '',
                 link: parsedFeedItem?.link || '',
-                pubDate: new Date(parsedFeedItem?.pubDate || '').toLocaleString(),
+                pubDate: new Date(parsedFeedItem?.pubDate || '').getTime(),
                 title: parsedFeedItem?.title || '',
                 enclosureUrl: parsedFeedItem?.enclosure?.url || '',
                 lastState: parsedFeedItem?.pubDate || ''
@@ -56,7 +56,7 @@ export async function checkFeed(clientOrInteraction: Client | ChatInputCommandIn
                         content: lastUpdate?.content || '',
                         contentSnippet: lastUpdate?.contentSnippet || '',
                         link: lastUpdate?.link || '',
-                        pubDate: lastUpdate?.pubDate || '',
+                        pubDate: lastUpdate?.pubDate || 0,
                         title: lastUpdate?.title || '',
                         enclosureUrl: lastUpdate?.enclosureUrl || '',
                         lastState: lastUpdate?.lastState || ''
