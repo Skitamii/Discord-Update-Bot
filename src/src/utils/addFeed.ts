@@ -2,8 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import { checkRSSFeed } from '../utils/rssParser.js';
 import { validateThumbnailURL, verifyAndSetHEXColor } from '../utils/verificator.js';
-import { type jsonFeeds, type jsonSubscriptions } from '../utils/types.js';
+import { type jsonFeeds, type jsonSubscriptions, type scraperFile } from '../utils/types.js';
 import { fileURLToPath } from 'url';
+import { getScraperAttribs } from './scraper.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,17 +12,28 @@ const feedsPath = path.join(__dirname, './../data/feeds.json');
 const subscriptionsPath = path.join(__dirname, './../data/subscriptions.json');
 
 
-export async function addfeed(feedName: string, url: string, thumbnail: string, paramEmbedColor: string, isRssFeed: boolean){
+export async function addfeed(feedName: string, url: string, thumbnail: string, paramEmbedColor: string) {
     // validate color
     const embedColor = verifyAndSetHEXColor(paramEmbedColor);
 
+    let scraperAttribs: scraperFile|null = null;
+    try {
+        scraperAttribs = await getScraperAttribs(feedName)
+    } catch (error) {
+        console.error("[addfeed()]" + (error as Error).message)
+    }
     // validate URL
-    if(isRssFeed){
+    let isRssFeed: boolean
+    if (scraperAttribs==null) {
+        isRssFeed = true;
         try {
             await checkRSSFeed(url);
         } catch (error) {
             throw new Error(`❌ Invalid feed URL.`);
         }
+    }else{
+        isRssFeed = false;
+        url = scraperAttribs.scraper.feedURL;
     }
 
     // validate thumbnail

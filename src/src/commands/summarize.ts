@@ -99,7 +99,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 }
             }
         } else {
-            jsonArticles = await executeGetAllArticle(feedName) || [];
+            try {
+                jsonArticles = await executeGetAllArticle(feedName) || [];
+            } catch (error) {
+                throw new Error("[cmd.summarize.execute.feedInteraction]")
+            }
         }
 
         if (jsonArticles.length === 0) {
@@ -180,7 +184,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     lastState: rssFeed?.pubDate || ''
                 }
             } else {
-                jsonItem = await executeGetSpecificUpdate(feedName, jsonArticleTitle);
+                try {
+                    jsonItem = await executeGetSpecificUpdate(feedName, jsonArticleTitle);
+                } catch (error) {
+                    throw new Error("[cmd.summarize.execute.updateInteraction]")
+                }
             }
             if (!jsonItem) return;
 

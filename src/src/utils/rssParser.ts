@@ -48,20 +48,24 @@ export async function checkFeed(clientOrInteraction: Client | ChatInputCommandIn
                 lastState: parsedFeedItem?.pubDate || ''
             }
         } else {
-            const lastArticle = await executeGetLastArticle(feedName);
-            if (clientOrInteraction instanceof ChatInputCommandInteraction || lastArticle?.lastState != feed.lastState) {
-                const lastUpdate = await executeGetLastUpdate(feedName);
-                parsedLastItem = {
-                    content: lastUpdate?.content || '',
-                    contentSnippet: lastUpdate?.contentSnippet || '',
-                    link: lastUpdate?.link || '',
-                    pubDate: lastUpdate?.pubDate || '',
-                    title: lastUpdate?.title || '',
-                    enclosureUrl: lastUpdate?.enclosureUrl || '',
-                    lastState: lastUpdate?.lastState || ''
+            try {
+                const lastArticle = await executeGetLastArticle(feedName);
+                if (clientOrInteraction instanceof ChatInputCommandInteraction || lastArticle?.lastState != feed.lastState) {
+                    const lastUpdate = await executeGetLastUpdate(feedName);
+                    parsedLastItem = {
+                        content: lastUpdate?.content || '',
+                        contentSnippet: lastUpdate?.contentSnippet || '',
+                        link: lastUpdate?.link || '',
+                        pubDate: lastUpdate?.pubDate || '',
+                        title: lastUpdate?.title || '',
+                        enclosureUrl: lastUpdate?.enclosureUrl || '',
+                        lastState: lastUpdate?.lastState || ''
+                    }
+                } else {
+                    return;
                 }
-            } else {
-                return;
+            } catch (error) {
+                throw new Error("[checkFeed()]")
             }
         }
         if (!parsedLastItem) return;

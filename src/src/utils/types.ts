@@ -57,6 +57,19 @@ export interface jsonItem {
     lastState: string
 }
 
+export interface scraperFile {
+    scraper: {
+        feedName: string;
+        feedURL: string;
+        feedThumbnail?: string;
+        feedEmbedColor?: string;
+    };
+    getLastArticle: () => Promise<jsonArticle | null>;
+    getLastUpdate: () => Promise<jsonItem | null>;
+    getAllArticle: () => Promise<jsonArticles|null>;
+    getSpecificUpdate: (updateName: String) => Promise<jsonItem|null>;
+}
+
 export const config = {
     BOT_TOKEN: process.env['BOT_TOKEN'] as string,
     APPLICATION_ID: process.env['APPLICATION_ID'] as string,

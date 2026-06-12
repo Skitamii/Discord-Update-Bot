@@ -12,7 +12,7 @@ const feedsPath = path.join(__dirname, './../data/feeds.json');
 
 export async function startFeedChecker(client: Client) {
     const checkInterval = config.CHECK_INTERVAL || 5;
-    await addAllScraper();
+    try { await addAllScraper(); } catch (error) { "[startFeedChecker()]"+console.error((error as Error).message) }
     checkAllFeeds(client);
     setInterval(async () => {
         await checkAllFeeds(client);

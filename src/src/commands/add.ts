@@ -38,7 +38,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const embedColorInput = (interaction.options.getString('embedcolor') || '').toUpperCase();
 
     try {
-        await addfeed(feedName, url, thumbnail, embedColorInput, true)
+        await addfeed(feedName, url, thumbnail, embedColorInput)
         await interaction.editReply(`✅ Feed **${feedName}** added successfully`);
     } catch (error) {
         await interaction.editReply(`ERROR: ${error}`);
