@@ -140,3 +140,4 @@ vite.config.ts.timestamp-*
 
 # Custom
 src/src/data/*
+src/src/scrapers/*
