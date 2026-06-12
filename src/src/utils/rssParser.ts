@@ -1,7 +1,7 @@
 import { Client, ChatInputCommandInteraction, TextChannel } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
-import rssParser, { type Item } from "rss-parser"
+import rssParser from "rss-parser"
 import { createUpdateEmbed } from './embedBuilder.js';
 import type { jsonFeed, jsonFeeds, jsonItem, jsonSubscription, jsonSubscriptions } from './types.js';
 import { fileURLToPath } from 'url';
@@ -72,8 +72,7 @@ export async function checkFeed(clientOrInteraction: Client | ChatInputCommandIn
         if (parsedLastItem.lastState == '') return;
 
         if (clientOrInteraction instanceof ChatInputCommandInteraction) {
-            let feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8'));
-            await notifySubscribers(clientOrInteraction, feed, parsedLastItem, feedName, feeds);
+            await notifySubscribers(clientOrInteraction, feed, parsedLastItem, feedName);
             return;
         }
         if (parsedLastItem.lastState != feed.lastState) {
@@ -82,7 +81,7 @@ export async function checkFeed(clientOrInteraction: Client | ChatInputCommandIn
             feeds[feedName].lastState = parsedLastItem.lastState;
             feeds[feedName].lastUpdatedAt = parsedLastItem.pubDate;
             fs.writeFileSync(feedsPath, JSON.stringify(feeds, null, 2));
-            await notifySubscribers(clientOrInteraction, feed, parsedLastItem, feedName, feeds);
+            await notifySubscribers(clientOrInteraction, feed, parsedLastItem, feedName);
         }
     } catch (error) {
         const errorCode = (error as Error)?.message;
@@ -107,7 +106,7 @@ export async function checkFeed(clientOrInteraction: Client | ChatInputCommandIn
     }
 }
 
-async function notifySubscribers(clientOrInteraction: Client | ChatInputCommandInteraction, feed: jsonFeed, item: jsonItem, feedName: string, feeds: jsonFeeds) {
+async function notifySubscribers(clientOrInteraction: Client | ChatInputCommandInteraction, feed: jsonFeed, item: jsonItem, feedName: string) {
     const subscriptions = JSON.parse(fs.readFileSync(subscriptionsPath, 'utf-8')) as jsonSubscriptions;
     const embed = createUpdateEmbed(feed, feedName, item);
     const subscription = subscriptions[feedName] as jsonSubscription;

@@ -1,6 +1,6 @@
 # 🎮 Discord Update Bot
 
-Discord Update Bot using RSS feeds to send update to user/channel based on the subscription
+Discord Update Bot using RSS feeds and scraper to send update to user/channel based on the subscription
 
 ## 📋 Requirements
 
@@ -119,4 +119,26 @@ npm run start
 
 - [x] Move to Typescript
 - [x] Add IA to summarize updates
-- [ ] Add templates example for scraping updates
+- [x] Add templates example for scraping updates
+- [ ] Change the way of "/update" work (check all updates)
+- [ ] Maybe add to embed message all images as attachment
+- [ ] Change contentSnippet to content to embed messages
+
+## ❓ FAQ
+```
+❓ I want to add an update who not have a rss feeds, how to do it ?
+✅ That's why I have created scraper, but you need some javascript skills to get articles and content of the update (please refer to example inside "scrapers" folder).
+- First use "axios" and "cheerio" (lolPatchNotes), and if the url don't let you get the html (like Rocket League), use playwright as example with Rocket League
+```
+```
+❓ I added my own scraper, how to add on the bot ?
+✅ Simply add it with the command "/add feedname: SameNameAsFile url: any (it take it from the file), or restart the app"
+```
+```
+❓ I don't have a display/GUI to let work playwright on ubuntu, what to do ?
+✅ Check "Xvfb" module for ubuntu
+```
+```
+❓ There is a bug on this app !
+✅ Please, open an issues, i'll try to do my best
+```
