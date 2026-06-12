@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import type { jsonArticle, jsonArticles, jsonFeeds, jsonItem } from '../utils/types.js';
 import { checkRSSFeed } from '../utils/rssParser.js';
-import { createUpdateEmbed } from '../utils/embedBuilder.js';
+import { createUpdateEmbed, embedBuilder } from '../utils/embedBuilder.js';
 import { executeGetAllArticle, executeGetSpecificUpdate } from '../utils/scraper.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -56,7 +56,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         time: 120000,
     });
 
-    let selectedItem: { feedName: string; title: string; content: string; url: string } | undefined;
+    let selectedItem: { feedName: string; title: string; content: string; url: string; pubDate: string; enclosureUrl: string; thumbnail: string } | undefined;
     let selectedUpdateIndex: number | null = null;
     let updateCollector: any = null; // Track the collector to close it
 
@@ -166,7 +166,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             if (!jsonArticleTitle) {
                 return await updateInteraction.update("Error: Article title not found")
             }
-            let jsonItem:jsonItem | null;
+            let jsonItem: jsonItem | null;
             if (feed.isRssFeed) {
                 const rssFeeds = await checkRSSFeed(feed.url);
                 const rssFeed = rssFeeds.items[index];
@@ -179,7 +179,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     enclosureUrl: rssFeed?.enclosure?.url || undefined,
                     lastState: rssFeed?.pubDate || ''
                 }
-            }else{
+            } else {
                 jsonItem = await executeGetSpecificUpdate(feedName, jsonArticleTitle);
             }
             if (!jsonItem) return;
@@ -188,7 +188,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 feedName: feedName,
                 title: jsonItem.title ?? 'Unknown',
                 content: jsonItem.contentSnippet ?? jsonItem.content ?? 'Unknown',
-                url: jsonItem.link ?? ''
+                url: jsonItem.link ?? '',
+                pubDate: jsonItem.pubDate,
+                enclosureUrl: jsonItem.enclosureUrl || '',
+                thumbnail: feed.thumbnail
             };
 
             const embed = createUpdateEmbed(feed, feedName, jsonItem);
@@ -278,10 +281,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         });
 
         const result = await callLLMAPI(selectedItem.content, customPrompt);
+        const summarizeMessage = `## ${interaction.user}:__${customPrompt}__\n\n${result}`;
+        const embed = embedBuilder(selectedItem.feedName, selectedItem.title, selectedItem.url, summarizeMessage, selectedItem.pubDate, undefined, selectedItem.enclosureUrl, selectedItem.thumbnail)
 
-        const summarizeMessage = `__${customPrompt}__\n# ${selectedItem.feedName}\n` + (selectedItem.url.startsWith('http') ? `## *[${selectedItem.title}](${selectedItem.url})*` : `## *${selectedItem.title}*`) + `\n\n${result}`;
-        await modalSubmit.editReply(summarizeMessage);
-
+        await modalSubmit.editReply({
+            content: '',
+            embeds: [embed]
+        });
         await interaction.editReply({ content: `Summary generated successfully ✅`, components: [] }).catch(() => { });
 
         feedCollector.stop();
@@ -299,7 +305,7 @@ async function callLLMAPI(content: string, customPrompt: string): Promise<string
     const apiKey = process.env['LLM_API_KEY'] as string;
     if (!apiKey) throw new Error('LLM_API_KEY not defined');
 
-    const prompt = `MAX 1500 CHARACTERS, ONLY THE ANSWER, NO SUB MESSAGE, NO TITLE, 
+    const prompt = `MAX 3000 CHARACTERS, ONLY THE ANSWER, NO SUB MESSAGE, NO TITLE, 
     FORMATTED FOR DISCORD MESSAGE (*italics*;**bold**;***bold italics***;__underline__;__*underline italics*__;__**underline bold**__;__***underline bold italics***__;~~Strikethrough~~)
     \n\n----------\n\n${customPrompt}\n\n----------\n\n${content}`;
 

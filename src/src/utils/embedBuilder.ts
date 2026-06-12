@@ -1,41 +1,42 @@
-import { EmbedBuilder } from 'discord.js';
-import rssParser from "rss-parser";
+import { EmbedBuilder, type ColorResolvable } from 'discord.js';
 import type { jsonFeed, jsonItem } from './types.js';
 
 export function createUpdateEmbed(feed: jsonFeed, feedName: string, item: jsonItem) {
-    const parts = item.pubDate?.trim().split(" ");
+    const embed = embedBuilder(feedName, item.title, item.link, htmlToDiscord(item.contentSnippet || "", 500), item.pubDate, feed.embedColor, item.enclosureUrl, feed.thumbnail)
+    return embed;
+}
+
+export function embedBuilder(feedName: string, title: string, url: string, content: string, pubDate: string, color: ColorResolvable = "#FFFFFF", enclosureUrl: string | null = null, thumbnail: string | null = null): EmbedBuilder {
+    const parts = pubDate.trim().split(" ");
     const [day, month, year] = parts?.[0]?.split("/") ?? [];
     const timePart = parts?.[1] ?? "00:00:00";
     const timestamp = Date.parse(`${year}-${month}-${day}T${timePart}`);
 
     const embed = new EmbedBuilder()
-        .setColor(feed.embedColor)
+        .setColor(color)
         .setAuthor({ name: feedName })
-        .setTitle(item.title || null)
-        .setURL(item.link || null)
-        .setDescription(htmlToDiscord(item.contentSnippet || "")) // use "content" but replace html tags to Discord markdown thing
+        .setTitle(title || null)
+        .setURL(url || null)
+        .setDescription(htmlToDiscord(content || "", 2500))
         .setFooter({
             text: `Update from ${feedName}`
         })
         .setTimestamp(new Date(timestamp || ''));
-    if (item.enclosureUrl != undefined) {
-        embed.setImage(item.enclosureUrl);
+    if (enclosureUrl) {
+        embed.setImage(enclosureUrl);
     }
-    if (feed.thumbnail) {
-        embed.setThumbnail(feed.thumbnail);
+    if (thumbnail) {
+        embed.setThumbnail(thumbnail);
     }
     return embed;
 }
 
-function htmlToDiscord(content: string) {
+function htmlToDiscord(content: string, charLimit: number) {
     if (!content) return '';
-    const charLimit = 500;
 
     content = content.replace(/[\r\n\t]+/g, '\n');
 
-    // 5. Smart truncation to ~500 characters
     if (content.length > charLimit) {
-        // Look for a natural breaking point (punctuation + space)
         const cutPoints = ['. ', '! ', '? ', '\n', ', ', '; '];
         let bestCut = charLimit;
 
