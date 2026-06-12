@@ -155,6 +155,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         updateCollector.on('collect', async (updateInteraction: StringSelectMenuInteraction) => {
             if (updateInteraction.customId !== 'summarize_update_select') return;
 
+            await updateInteraction.update({
+                content: '⏳ Loading update...',
+                embeds: [],
+                components: [],
+            })
             const index = Number(updateInteraction.values[0]);
             selectedUpdateIndex = index;
             const jsonArticleTitle = jsonArticles[index]?.title;
@@ -206,7 +211,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 .setLabel('Summarize')
                 .setStyle(ButtonStyle.Primary);
 
-            await updateInteraction.update({
+            await updateInteraction.editReply({
                 content: '',
                 embeds: [embed],
                 components: [
