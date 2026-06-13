@@ -49,7 +49,6 @@ export async function getScraperAttribs(feedName: string): Promise<scraperFile |
         scrapersFiles = fs.readdirSync(scrapersPath).filter((file) => file.endsWith('.js'));
     } catch (error) {
         return null;
-        //throw new Error("[isScraperExist()]ERROR: No scraper file found");
     }
     for (const scraperFile of scrapersFiles) {
         const filePath = path.join(scrapersPath, scraperFile);

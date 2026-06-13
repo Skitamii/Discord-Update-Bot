@@ -34,12 +34,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         .setCustomId('summarize_feed_select')
         .setPlaceholder('Choose a feed...')
         .addOptions(
-            availableFeeds.map(_feedName => {
+            availableFeeds.slice(0, 25).map(_feedName => {
                 const feed = feeds[_feedName]!;
                 return new StringSelectMenuOptionBuilder()
                     .setLabel(_feedName)
                     .setValue(_feedName)
-                    .setDescription(`Last update: ${feed.lastUpdatedAt}`);
+                    .setDescription(`Last update: ${new Date(feed.lastUpdatedAt).toLocaleString()}`);
             })
         );
 
@@ -118,12 +118,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setCustomId('summarize_feed_select')
             .setPlaceholder('Choose a feed...')
             .addOptions(
-                availableFeeds.map(_feedName => {
+                availableFeeds.slice(0, 25).map(_feedName => {
                     const feed = feeds[_feedName]!;
                     return new StringSelectMenuOptionBuilder()
                         .setLabel(_feedName)
                         .setValue(_feedName)
-                        .setDescription(`Last update: ${feed.lastUpdatedAt}`)
+                        .setDescription(`Last update: ${new Date(feed.lastUpdatedAt).toLocaleString()}`)
                         .setDefault(_feedName === feedName)
                 })
             );
@@ -132,7 +132,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setCustomId('summarize_update_select')
             .setPlaceholder('Choose an update...')
             .addOptions(
-                jsonArticles.map((item, idx) =>
+                jsonArticles.slice(0, 25).map((item, idx) =>
                     new StringSelectMenuOptionBuilder()
                         .setLabel((item.title ?? `Update ${idx + 1}`).slice(0, 100))
                         .setValue(String(idx))
@@ -208,7 +208,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 .setCustomId('summarize_update_select')
                 .setPlaceholder('Choose an update...')
                 .addOptions(
-                    jsonArticles.map((item, idx) =>
+                    jsonArticles.slice(0, 25).map((item, idx) =>
                         new StringSelectMenuOptionBuilder()
                             .setLabel((item.title ?? `Update ${idx + 1}`).slice(0, 100))
                             .setValue(String(idx))

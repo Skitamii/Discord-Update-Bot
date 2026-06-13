@@ -14,12 +14,12 @@ export function embedBuilder(feedName: string, title: string, url: string, conte
 
     const embed = new EmbedBuilder()
         .setColor(color)
-        .setAuthor({ name: feedName })
-        .setTitle(title || null)
+        .setAuthor({ name: feedName.slice(0, 200) })
+        .setTitle(title.slice(0, 200) || null)
         .setURL(url || null)
-        .setDescription(htmlToDiscord(content || "", 2500))
+        .setDescription(htmlToDiscord(content, 3000)||'')
         .setFooter({
-            text: `Update from ${feedName}`
+            text: `Update from ${feedName.slice(0, 200)}`
         })
         .setTimestamp(pubDate);
     if (enclosureUrl) {
