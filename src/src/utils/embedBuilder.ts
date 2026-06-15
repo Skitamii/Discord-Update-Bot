@@ -7,11 +7,6 @@ export function createUpdateEmbed(feed: jsonFeed, feedName: string, item: jsonIt
 }
 
 export function embedBuilder(feedName: string, title: string, url: string, content: string, pubDate: number, color: ColorResolvable = "#FFFFFF", enclosureUrl: string | null = null, thumbnail: string | null = null): EmbedBuilder {
-    // const parts = pubDate.trim().split(" ");
-    // const [day, month, year] = parts?.[0]?.split("/") ?? [];
-    // const timePart = parts?.[1] ?? "00:00:00";
-    // const timestamp = Date.parse(`${year}-${month}-${day}T${timePart}`);
-
     const embed = new EmbedBuilder()
         .setColor(color)
         .setAuthor({ name: feedName.slice(0, 200) })
