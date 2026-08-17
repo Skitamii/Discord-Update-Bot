@@ -121,8 +121,11 @@ npm run start
 - [x] Add IA to summarize updates
 - [x] Add templates example for scraping updates
 - [ ] Change the way of "/update" work (check all updates)
-- [ ] Maybe add to embed message all images as attachment
-- [ ] Change contentSnippet to content to embed messages
+- [ ] Maybe add to embed message all images as attachment (or /getAttachment command)
+- [ ] Change contentSnippet to content to embed messages (and translate with discord formatting Bold, Italic, Underline etc...)
+- [ ] Make a retry count for feed (ex: bot lost internet)
+- [ ] add sqlite instead ~~Add a json file with updates (actually checking on rss feed or scrap website for an update than can take time to process) < And we can have a history of the updates~~
+- [ ] Set timer by update (ex, 5 min for Feed1, and 15 min Feed2)
 
 ## ❓ FAQ
 ```
