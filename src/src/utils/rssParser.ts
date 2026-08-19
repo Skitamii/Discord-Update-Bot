@@ -98,10 +98,6 @@ export async function checkFeed(clientOrInteraction: Client | ChatInputCommandIn
             console.log(`[${feedName}] temp network error: ${error}`);
             return;
         }
-
-        const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8')) as jsonFeeds;
-        feeds[feedName]!.disabled = true;
-        fs.writeFileSync(feedsPath, JSON.stringify(feeds, null, 2));
         throw new Error(error instanceof Error ? `ERROR: ${error.message}` : `ERROR: ${String(error)}`);
     }
 }
