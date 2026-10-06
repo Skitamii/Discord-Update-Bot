@@ -56,7 +56,12 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
         .slice(0, 25);
 
     await interaction.respond(
-        choices.map(name => ({ name, value: name }))
+        choices.map(name => ({
+            name: feeds[name]!.disabled
+                ? `${name.slice(0, 30)} (disabled)`
+                : name.slice(0, 100),
+            value: name
+        }))
     );
 }
 

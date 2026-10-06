@@ -285,7 +285,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         await modalSubmit.reply({
             content: '⏳ Generating summary...',
-            flags: isEphemeral ? MessageFlags.Ephemeral : MessageFlags.SuppressEmbeds,
+            flags: isEphemeral ? MessageFlags.Ephemeral : undefined,
         });
 
         const result = await callLLMAPI(selectedItem.content, customPrompt);

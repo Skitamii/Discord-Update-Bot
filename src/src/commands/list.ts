@@ -17,7 +17,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const feeds = JSON.parse(fs.readFileSync(feedsPath, 'utf-8')) as jsonFeeds;
 
     const feedsList = Object.entries(feeds)
-        .map(([name, _data]) => `- ${name}`)
+        .map(([name, data]) => data.disabled ? `- ${name} (disabled)` : `- ${name}`)
         .join('\n');
 
     return await interaction.editReply(`Feed available:\n${feedsList}`);

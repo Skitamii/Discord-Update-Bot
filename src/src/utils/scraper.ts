@@ -3,6 +3,7 @@ import path from "path";
 import { fileURLToPath } from 'url';
 import { addfeed } from './addFeed.js';
 import type { jsonFeeds, jsonArticle, jsonArticles, jsonItem, scraperFile } from "./types.js";
+import { chromium, type Page } from 'patchright';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -144,4 +145,17 @@ export async function executeGetAllArticle(feedName: string): Promise<jsonArticl
         }
     }
     return null;
+}
+
+export async function withChromeBrowser<T>(
+    action: (page: Page) => Promise<T>
+): Promise<T> {
+    const browser = await chromium.launch({ headless: false });
+
+    try {
+        const page = await browser.newPage();
+        return await action(page);
+    } finally {
+        await browser.close();
+    }
 }

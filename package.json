@@ -7,7 +7,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npx patchright install",
     "start": "node ./dist/index.js",
     "setup": "node ./dist/src/utils/appInit.js",
     "deploy-commands": "node ./dist/src/utils/deploy-commands.js",
@@ -25,7 +25,7 @@
     "rss-parser": "^3.13.0"
   },
   "devDependencies": {
-    "@types/node": "^25.3.0",
+    "@types/node": "^25.9.9",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
